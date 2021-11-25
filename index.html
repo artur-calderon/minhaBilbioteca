@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>MaBooks</title>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img src="" alt="mabook-logo" />
+      </div>
+    </header>
+    <main>
+      <aside class="user_info">
+        <div class="user_photo"></div>
+        <div class="user_book_info"></div>
+        <div class="user_description" onclick="">
+          <p>About me:</p>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus
+            vestibulum nisi sed odio maximus vestibulum ut ac quam. Aliquam
+            aliquam ac nulla nec mattis.
+          </p>
+        </div>
+        <div class="log-out">Log Out</div>
+      </aside>
+
+      <div class="library">
+        <div class="search">
+          <p>Search for Books:</p>
+          <input type="text" name="search-books" />
+          <button class="btn-search">Search</button>
+          <button class="show-library" class="btn-search">My Library</button>
+        </div>
+        <div class="results"></div>
+      </div>
+    </main>
+    <script type="module" src="scripts/main.js"></script>
+  </body>
+</html>
