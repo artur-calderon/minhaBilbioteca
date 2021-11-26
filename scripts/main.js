@@ -55,7 +55,7 @@ function getBooks() {
 //mostra na tela os resultados pesquisados na api google books
 function showResults(result) {
   let box = document.querySelector('.results')
-  message('Carregando...', box)
+
   box.innerHTML = ' '
 
   result.forEach(el => {
@@ -67,7 +67,7 @@ function showResults(result) {
       description = el.volumeInfo.description.substring(0, 100)
     } else {
       photo =
-        'https://patriciaelias.com.br/wp-content/uploads/2021/01/placeholder.png'
+        'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png'
       description = 'No description Avaliable'
     }
 
@@ -151,7 +151,7 @@ function showLibrary(res) {
       photo = res.volumeInfo.imageLinks.thumbnail
     } else {
       photo =
-        'https://patriciaelias.com.br/wp-content/uploads/2021/01/placeholder.png'
+        'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png'
     }
 
     if (res.volumeInfo.description) {
@@ -167,11 +167,8 @@ function showLibrary(res) {
             <p><a href='${res.volumeInfo.infoLink}' target="_blank" >Saiba mais...</a></p>
             <button id="btn-add">Remover da biblioteca</button>
           </li>
-          <img src='${photo}'  alt='Capa do livro'class="cover">
+          <img src='${photo}' alt='Capa do livro'class="cover">
       </ul>
      `
   })
-}
-function message(message, el) {
-  return (el.innerHTML = message)
 }
