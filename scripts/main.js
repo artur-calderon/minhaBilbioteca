@@ -4,8 +4,17 @@ import {
   getFirestore,
   collection,
   addDoc,
-  getDocs
+  onSnapshot,
+  doc,
+  deleteDoc
 } from 'https://www.gstatic.com/firebasejs/9.5.0/firebase-firestore.js'
+import {
+  GoogleAuthProvider,
+  getAuth,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/9.5.0/firebase-auth.js'
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -22,6 +31,39 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
+const auth = getAuth(app)
+
+const provider = new GoogleAuthProvider()
+
+let header = document.querySelector('header')
+let main = document.querySelector('main')
+let telaLogin = document.querySelector('.login')
+header.style.display = 'none'
+main.style.display = 'none'
+let botao = document.querySelector('.btn-logar')
+
+botao.addEventListener('click', () => {
+  signInWithPopup(auth, provider)
+    .then(result => {
+      if (result) {
+        console.log(result.user.uid)
+      }
+    })
+    .catch(error => {
+      console.log(error)
+    })
+})
+
+onAuthStateChanged(auth, user => {
+  console.log(user)
+  if (user) {
+    userInfo(user)
+    botao.style.display = 'none'
+    telaLogin.style.display = 'none'
+    header.style.display = 'flex'
+    main.style.display = 'flex'
+  }
+})
 
 // Pega o input do usuario e botao
 
@@ -41,7 +83,6 @@ function getBooks() {
         return res.json()
       })
       .then(result => {
-        console.log(result.items)
         showResults(result.items)
       })
       .catch(error => {
@@ -56,9 +97,13 @@ function getBooks() {
 function showResults(result) {
   let box = document.querySelector('.results')
 
+  document.querySelector('.minhaLib').style.display = 'none'
+  box.style.display = 'flex'
   box.innerHTML = ' '
-
   result.forEach(el => {
+    let algo = {
+      nome: 's'
+    }
     let photo
     let description
 
@@ -77,7 +122,7 @@ function showResults(result) {
               <h3>${el.volumeInfo.title}</h3>
               <p>${description}...</p>
               <p><a href='${el.volumeInfo.infoLink}' target="_blank" >Saiba mais...</a></p>
-              <button id="btn-add" id-book="${el.selfLink}">Adicionar a biblioteca</button>
+              <button class="btn-add-remove" id="btn-add" id-book="${el.selfLink}">Adicionar a biblioteca</button>
             </li>
             <img src='${photo}'  alt='Capa do livro' class="cover">
           </ul>
@@ -95,80 +140,50 @@ function showResults(result) {
 // salva o link de informaçãp dos livros no banco de dados
 async function saveBooks(e) {
   const info_book = e.target.getAttribute('id-book')
+
   await addDoc(collection(db, 'myLibrary'), { info_book })
     .then(res => {
-      console.log('Adiciondo com sucesso')
+      alert('Adiciondo com sucesso')
+      document.querySelector('.minhaLib').style.display = 'none'
     })
     .catch(error => {
       console.log(error)
     })
-  console.table(info_book)
 }
 
-// Recupera o link pessoal de cada livro do firebase e da um fetch neles
+function userInfo(info) {
+  //informações do user, colocar em uma função só pra isso depois
+  let user_photo = document.querySelector('.user_photo')
+  user_photo.style.backgroundImage = `url(${info.photoURL})`
+  onSnapshot(collection(db, 'myLibrary'), res => {
+    const user_info = document.querySelector('.user_book_info')
 
-const recupera = await getDocs(collection(db, 'myLibrary'))
-
-//informações do user, colocar em uma função só pra isso depois
-const user_info = document.querySelector('.user_book_info')
-let algo = Object.keys(recupera.docs).length
-user_info.innerHTML = `
-<p><b>Artur Calderon</b></p>
-<p>Books Read:</p>
-<p>Books at library: <b>${algo}</b></p>
-<p>Reading Now:</p>
-`
-
-recupera.forEach(element => {
-  const q = element.data().info_book
-
-  fetch(q)
-    .then(res => {
-      res
-        .json()
-        .then(res => {
-          showLibrary(res)
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    })
-    .catch(err => {
-      console.log(err)
-    })
-})
-
-function showLibrary(res) {
-  const boxMyBooks = document.querySelector('.show-library')
-
-  boxMyBooks.addEventListener('click', () => {
-    let boxResults = document.querySelector('.results')
-
-    let photo
-    let description
-
-    if (res.volumeInfo.imageLinks) {
-      photo = res.volumeInfo.imageLinks.thumbnail
-    } else {
-      photo =
-        'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png'
-    }
-
-    if (res.volumeInfo.description) {
-      description = res.volumeInfo.description.substring(0, 100)
-    } else {
-      description = 'No description Avaliable'
-    }
-    boxResults.innerHTML += `
-      <ul class="card-wrapper">
-          <li class="card">
-            <h3>${res.volumeInfo.title}</h3>
-            <p>${description}...</p>
-            <p><a href='${res.volumeInfo.infoLink}' target="_blank" >Saiba mais...</a></p>
-            <button id="btn-add">Remover da biblioteca</button>
-          </li>
-          <img src='${photo}' alt='Capa do livro'class="cover">
-      </ul>
-     `
+    user_info.innerHTML = `
+      <p><b>${info.displayName}</b></p>
+      <p>Books Read: <b>4</b></p>
+      <p>Books at library: <b>${res.docs.length}</b></p>
+      <p>Reading Now: <b>The Hobbit</b></p>
+      `
   })
 }
+
+let btn_sair = document.querySelector('.log-out')
+
+btn_sair.addEventListener('click', logOut)
+
+function logOut() {
+  signOut(auth)
+    .then(() => {
+      // Sign-out successful.
+      alert('Deslogado')
+      botao.style.display = 'block'
+      telaLogin.style.display = 'flex'
+      header.style.display = 'none'
+      main.style.display = 'none'
+    })
+    .catch(error => {
+      // An error happened.
+    })
+}
+
+export { userInfo }
